@@ -1,6 +1,7 @@
 import svelte from 'rollup-plugin-svelte';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import postcss from 'rollup-plugin-postcss';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 
@@ -24,6 +25,10 @@ export default {
 				css.write('public/build/bundle.css');
 			}
 		}),
+		resolve({
+      		browser: true,
+      		dedupe: importee => importee === 'svelte' || importee.startsWith('svelte/')
+    	}),
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -35,7 +40,18 @@ export default {
 			dedupe: importee => importee === 'svelte' || importee.startsWith('svelte/')
 		}),
 		commonjs(),
-
+		postcss({
+			extract: true,
+			minimize: true,
+			use: [
+				['sass', {
+				includePaths: [
+					'./theme',
+					'./node_modules'
+				]
+				}]
+			]
+		}),
 		// In dev mode, call `npm run start` once
 		// the bundle has been generated
 		!production && serve(),
